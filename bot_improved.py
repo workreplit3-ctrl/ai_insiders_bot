@@ -19,6 +19,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiohttp import web
 
 import config
 from prompts import get_welcome_prompt, get_payment_message
@@ -302,26 +303,40 @@ async def main():
     port = int(os.getenv("PORT", "8080"))
 
     if webhook_url:
-        await bot.set_webhook(
-            f"{webhook_url}{webhook_path}",
-            secret_token=webhook_secret,
-            drop_pending_updates=True,
-        )
-        logger.info(f"Webhook установлен: {webhook_url}{webhook_path}")
-        await dp.start_webhook(
-            bot=bot,
-            webhook_path=webhook_path,
-            host="0.0.0.0",
-            port=port,
-            skip_updates=False,
-            secret_token=webhook_secret,
-        )
+        # Webhook mode requires aiogram web application; keeping fallback to polling for stability
+        logger.info("Webhook URL set, but running in polling mode due to aiogram version.")
+        await dp.start_polling(bot, skip_updates=True)
     else:
         await dp.start_polling(bot, skip_updates=True)
 
 
+async def start_health_server(port: int):
+    app = web.Application()
+
+    async def health(request):
+        return web.json_response({"status": "ok", "service": "ai_insiders_bot"})
+
+    async def index(request):
+        return web.Response(text="AI Insiders Bot is running")
+
+    app.router.add_get("/health", health)
+    app.router.add_get("/", index)
+
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    logger.info(f"Health server started on port {port}")
+
+
 if __name__ == "__main__":
+    port = int(os.getenv("PORT", "8080"))
+
+    async def run():
+        await start_health_server(port)
+        await main()
+
     try:
-        asyncio.run(main())
+        asyncio.run(run())
     except KeyboardInterrupt:
         logger.info("Бот остановлен.")
