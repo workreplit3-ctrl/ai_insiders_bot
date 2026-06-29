@@ -13,7 +13,19 @@
 | /addadmin <user_id\|@username> | Добавить нового админа. | админы |
 | /setwelcome | Изменить приветственный текст (/start). Бот попросит прислать новый текст. | админы |
 
-## Расположение
+## Репозиторий
+- GitHub: https://github.com/workreplit3-ctrl/ai_insiders_bot
+
+## Расположение файлов
 - Конфиг: `config.py`
 - Приветствие и реквизиты: `prompts.json`
 - Бот: `bot_improved.py`
+
+## Развёртывание на Render
+1. Зайди на render.com
+2. New + → Web Service
+3. Выбери репозиторий `ai_insiders_bot`
+4. Укажи переменные окружения:
+   - `BOT_TOKEN` — токен Telegram-бота
+   - `ADMIN_IDS` — список ID админов через запятую
+5. Render сам подтянет `render.yaml`
