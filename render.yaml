@@ -9,4 +9,10 @@ services:
         sync: false
       - key: ADMIN_IDS
         sync: false
+      - key: TELEGRAM_WEBHOOK_URL
+        value: https://ai-insiders-bot.onrender.com
+      - key: TELEGRAM_WEBHOOK_SECRET
+        generateValue: true
+      - key: PORT
+        value: "8080"
     autoDeploy: true
